@@ -349,10 +349,10 @@ func (pm *ProtocolManager) handleRoleChange(roleC <-chan interface{}) {
 			}
 
 			if intRole == minterRole {
-				logCheckpoint(becameMinter, "")
+				logger.LogRaftCheckpoint(logger.BecameMinter)
 				pm.minter.start()
 			} else { // verifier
-				logCheckpoint(becameVerifier, "")
+				logger.LogRaftCheckpoint(logger.BecameVerifier)
 				pm.minter.stop()
 			}
 
@@ -604,10 +604,6 @@ func sleep(duration time.Duration) {
 	<-time.NewTimer(duration).C
 }
 
-func logCheckpoint(checkpointName string, iface interface{}) {
-	glog.V(logger.Info).Infof("RAFT-CHECKPOINT %s %v\n", checkpointName, iface)
-}
-
 func blockExtendsChain(block *types.Block, chain *core.BlockChain) bool {
 	return block.ParentHash() == chain.CurrentBlock().Hash()
 }
@@ -627,7 +623,7 @@ func (pm *ProtocolManager) applyNewChainHead(block *types.Block) {
 		}
 
 		for _, tx := range block.Transactions() {
-			logCheckpoint(txAccepted, tx.Hash().Hex())
+			logger.LogRaftCheckpoint(logger.TxAccepted, tx.Hash().Hex())
 		}
 
 		if pm.blockchain.HasBlock(block.Hash()) {
